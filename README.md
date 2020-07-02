@@ -1,8 +1,12 @@
 # Find-Tweets-By-Keyword
 
+[`Twint`](https://github.com/twintproject/twint) is an amazing library for scraping Twitter without worrying about Twitter auth or rate limits. It has a comprehensive CLI interface that I encourage you to go use if you want to explore your own specific use cases.
+
+This library in particular covers scraping for multiple keywords at once.
+
 ### \#1 - setup
 
-Next, we install the Pip manager for Python libraries and add the [`Twint`](https://github.com/twintproject/twint) library
+First, we install the Pip manager for Python libraries and add the [`Twint`](https://github.com/twintproject/twint) library
 ```bash
 pip install twint
 ```
@@ -14,9 +18,12 @@ git clone git@github.com:alecbw/Find-Tweets-By-Keyword.git && cd Find-Tweets-By-
 
 ### \#2 - usage
 
+An example invocation is as follows. For phrases with a space, be sure to wrap in double quotation marks
+```bash
 python3 get_tweets_by_keyword.py -o "Tweets about eCom.csv" -k  "problem with magento" "shopify bug" woocommerce -l 10
+```
 
-A series of optional command line arguments are provided (only `-k` is required). A list of the full `twint` supported args in at the bottom of `get_tweets_by_keyword.py`:
+A series of optional command line arguments are provided (only `-k`/`--keywords` is required):
 
 | CLI Arg                   | Description                                                                           
 |---------------------------|-------------------------------------------------------------------------------------------
@@ -28,3 +35,5 @@ A series of optional command line arguments are provided (only `-k` is required)
 | '-m', '--min_likes'       | Limit the results to only tweets with a given number of likes       
 | '-n', '--near'            | Limit the results to tweets geolocated near a given city            
 | '-v', '--verified'        | Limit the results to tweets made by accounts that are verified       
+
+A list of the full `twint` supported args in at the bottom of `get_tweets_by_keyword.py`
