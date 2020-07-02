@@ -4,7 +4,8 @@ import csv
 import os
 import argparse
 import logging
-logger = logging.getLogger()
+
+logging.getLogger().setLevel(logging.INFO)
 
 try:
     import twint
@@ -27,32 +28,34 @@ args = vars(args) # convert to dict
 
 ###############################################################################
 
-def unpack_twint_tweet(tweet_list):
+def unpack_twint_tweet(keyword, tweet_list):
 
     output_lod = []
     for n, tweet in enumerate(tweet_list):
         output_dict = {
-        'author_account': tweet.username,
-        'author_name': tweet.name,
-        # 'author_description': tweet.author.description,
-        # 'author_location': tweet.author.location,
-        'author_url': tweet.user_id,
-        'created_at': tweet.timestamp,
-        'geo': tweet.geo,
-        'id': tweet.id,
-        'in_reply_to_screen_name': tweet.reply_to,
-        # 'in_reply_to_status_id': tweet.in_reply_to_status_id,
-        # 'in_reply_to_user_id': tweet.in_reply_to_user_id,
-        'is_quote_status': tweet.quote_url,
-        'lang': tweet.translate,
-        'retweets': tweet.retweets_count,
-        'source': tweet.source,
-        'text': tweet.tweet,
-        'link': tweet.link,
-        'likes': tweet.likes_count,
-        'urls': tweet.urls
+            'tweet_id': tweet.id,
+            'keyword_searched': keyword,
+            'author_account': tweet.username,
+            'author_name': tweet.name,
+            'author_id': tweet.user_id,
+            'created_at': datetime.fromtimestamp(tweet.datetime/1000),
+            'timezone': tweet.timezone,
+            'geo': tweet.place or tweet.near, # geo
+            'text': tweet.tweet,
+            'link': tweet.link,
+            'urls': tweet.urls,
+            'mentions': tweet.mentions,
+            'likes': tweet.likes_count,
+            'retweets': tweet.retweets_count,
+            'replies': tweet.replies_count,
+            'in_reply_to_screen_name': [x.get('username') for x in tweet.reply_to] if tweet.reply_to else None,
+            'QT_url': tweet.quote_url,
+            # 'RT': tweet.retweet,
+            # 'user_rt': tweet.user_rt,
+            # 'user_rt_id': tweet.user_rt_id,
+            # 'rt_id': tweet.retweet_id,
+            # 'user_rt_date': tweet.retweet_date,
         }
-        # for key in [ 'conversation_id', '', 'datetime', , '','mentions', 'name', 'near', 'photos', 'place', '', 'replies_count', '', '', 'retweet_date', 'retweet_id', 'retweets_count', '', 'timezone', 'trans_dest', 'trans_src', '', 'tweet', 'type', '', '', 'user_id_str', 'user_rt', 'user_rt_id', '', 'video']:
         output_lod.append(output_dict)
 
     return output_lod
@@ -61,31 +64,17 @@ def unpack_twint_tweet(tweet_list):
 def twint_scrape(keyword, args):
     c = twint.Config()
     c.Search = keyword
-    print(args)
     for k,v in args.items():
         if v:
-            c.__setattr__(k.title(),v)
-    # print(args)
-    # if args.l:
-    #     c.Limit = args.l
-    # if args.s:
-    #     c.Since = args.s
-    # if args.u:
-    #     c.Until = args.u
-    # if args.m:
-    #     c.Min_likes = args.m
-    # if args.n:
-    #     c.Near = args.n
-    # if args.v:
-    #     c.Verified = args.v
+            setattr(c, k.capitalize(), v)
 
     c.Hide_output = True
     c.Store_object = True
-    print(vars(c))
+    c.Resume = "scrape_interrupted_last_id.csv"
     twint.run.Search(c)
-    output_lod = unpack_twint_tweet(twint.output.tweets_list)
 
-    print(output_lod)
+    output_lod = unpack_twint_tweet(keyword, twint.output.tweets_list)
+
     return output_lod
 
 
@@ -102,11 +91,12 @@ if __name__ == "__main__":
         dict_writer.writeheader()
         dict_writer.writerows(result_lod)
 
+    os.remove("scrape_interrupted_last_id.csv")
 
 #########################################################################################################
 
 """
-optional arguments:
+all twint optional arguments:
   -h, --help            show this help message and exit
   -u USERNAME, --username USERNAME
                         User's Tweets you want to scrape.
@@ -181,3 +171,10 @@ optional arguments:
                         Automatically clean Pandas dataframe at every scrape.
   --get-replies         All replies to the tweet.
 """
+
+# def show_tweet(link):
+#     '''Display the contents of a tweet. '''
+#     url = 'https://publish.twitter.com/oembed?url=%s' % link
+#     response = requests.get(url)
+#     html = response.json()["html"]
+#     display(HTML(html))/publish.twitter.com/oembed?url=%s' % link
