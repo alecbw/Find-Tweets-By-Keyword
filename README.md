@@ -21,10 +21,10 @@ A series of optional command line arguments are provided (only `-k` is required)
 | CLI Arg                   | Description                                                                           
 |---------------------------|-------------------------------------------------------------------------------------------
 | '-k', '--keywords'        | A list of keywords (separated by spaces) that you want to search for', required=True
-| '-o', '--output_filename' | If you want an output filename other than the default                             
-| '-s', '--since'           | If you want to filter by posted date since a given date. Format is 2019-12-20 20:30:15
-| '-u', '--until'           | If you want to filter by posted date until a given date. Format is 2019-12-20 20:30:15
-| '-l', '--limit'           | If you want to limit the results per keyword provided                          
-| '-m', '--min_likes'       | If you want to limit the results to only tweets with a given number of likes       
-| '-n', '--near'            | If you want to limit the results to tweets geolocated near a given city            
-| '-v', '--verified'        | If you want to limit the results to tweets made by accounts that are verified        
+| '-o', '--output_filename' | Set then output filename to something other than the default                             
+| '-s', '--since'           | Filter by posted date since a given date. Format is 2019-12-20 20:30:15
+| '-u', '--until'           | Filter by posted date until a given date. Format is 2019-12-20 20:30:15
+| '-l', '--limit'           | Limit the results per keyword provided                          
+| '-m', '--min_likes'       | Limit the results to only tweets with a given number of likes       
+| '-n', '--near'            | Limit the results to tweets geolocated near a given city            
+| '-v', '--verified'        | Limit the results to tweets made by accounts that are verified       
