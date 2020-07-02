@@ -6,7 +6,7 @@ This library in particular covers scraping for multiple keywords at once.
 
 ### \#1 - setup
 
-First, we install the Pip manager for Python libraries and add the [`Twint`](https://github.com/twintproject/twint) library
+First, we add the [`Twint`](https://github.com/twintproject/twint) library
 ```bash
 pip install twint
 ```
