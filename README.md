@@ -35,7 +35,7 @@ A series of optional command line arguments are provided (only `-k`/`--keywords`
 | '-m', '--min_likes'       | Limit the results to only tweets with a given number of likes       
 | '-n', '--near'            | Limit the results to tweets geolocated near a given city            
 | '-v', '--verified'        | Limit the results to tweets made by accounts that are verified     
-| '-h', '--hide_output'     | If you want to disable routing results logging;  default=True
+| '-h', '--hide_output'     | If you want to disable routine results logging;  default=True
 
 
 A list of the full `twint` supported args in at the bottom of `get_tweets_by_keyword.py`
