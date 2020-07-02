@@ -14,14 +14,14 @@ git clone git@github.com:alecbw/Find-Tweets-By-Keyword.git && cd Find-Tweets-By-
 
 ### \#2 - usage
 
-python3 get_tweets_by_keyword.py -o "Tweets about ecom 6.29.csv" -k  "software stack" "stackshare" -l 10
+python3 get_tweets_by_keyword.py -o "Tweets about eCom.csv" -k  "problem with magento" "shopify bug" woocommerce -l 10
 
 A series of optional command line arguments are provided (only `-k` is required). A list of the full `twint` supported args in at the bottom of `get_tweets_by_keyword.py`:
 
 | CLI Arg                   | Description                                                                           
 |---------------------------|-------------------------------------------------------------------------------------------
 | '-k', '--keywords'        | A list of keywords (separated by spaces) that you want to search for', required=True
-| '-o', '--output_filename' | Set then output filename to something other than the default                             
+| '-o', '--output_filename' | Set the output filename to something other than the default                             
 | '-s', '--since'           | Filter by posted date since a given date. Format is 2019-12-20 20:30:15
 | '-u', '--until'           | Filter by posted date until a given date. Format is 2019-12-20 20:30:15
 | '-l', '--limit'           | Limit the results per keyword provided                          
