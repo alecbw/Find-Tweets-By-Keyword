@@ -149,7 +149,7 @@ if __name__ == "__main__":
         result_lod += twint_scrape(keyword, args)
 
     if deduplicate_option:
-        logging.info("Deduplicating")
+        logging.info("Deduplicating the results")
         result_lod = deduplicate_lod(result_lod, 'tweet_id')
 
     if ".csv" in output_filename:
