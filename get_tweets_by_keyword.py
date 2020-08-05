@@ -128,7 +128,6 @@ def twint_scrape(keyword, args):
     # c.Resume = "scrape_interrupted_last_id.csv" # TODO implement save-last-scroll-id
     twint.run.Search(c)
 
-
     output_lod = unpack_twint_tweet(keyword, tweets) 
 
     logging.info(f"The keyword {keyword} has produced {len(output_lod)} tweets")
