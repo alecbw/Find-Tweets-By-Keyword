@@ -75,7 +75,7 @@ def deduplicate_lod(input_lod, primary_key):
             output_dict[d[primary_key]] = d
 
     return list(output_dict.values())
-    
+
 
 def unpack_twint_tweet(keyword, tweet_list):
 
@@ -161,7 +161,6 @@ if __name__ == "__main__":
     else:
         write_new_google_sheet(result_lod, output_filename)
 
-    # os.remove("scrape_interrupted_last_id.csv")
 
 #########################################################################################################
 
@@ -248,3 +247,6 @@ all twint optional arguments:
 #     response = requests.get(url)
 #     html = response.json()["html"]
 #     display(HTML(html))/publish.twitter.com/oembed?url=%s' % link
+
+
+    # os.remove("scrape_interrupted_last_id.csv")
