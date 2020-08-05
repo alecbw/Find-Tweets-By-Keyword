@@ -13,14 +13,16 @@ except ImportError:
     sys.exit("~ Make sure you install twint. Run `pip install twint` and try this again ~")
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument('-k','--keywords', nargs='+', help='<Required> A list of keywords (separated by spaces) that you want to search for', required=True)
+argparser.add_argument('-k', '--keywords', nargs='+', help='<Required> A list of keywords (separated by spaces) that you want to search for', required=True)
 argparser.add_argument('-o', '--output_filename', nargs='?', default="! Resulting Tweets.csv", help="If you want an output filename other than the default")
 argparser.add_argument('-s', '--since', nargs='?', default=None, help="If you want to filter by posted date since a given date. Format is 2019-12-20 20:30:15")
 argparser.add_argument('-u', '--until', nargs='?', default=None, help="If you want to filter by posted date until a given date. Format is 2019-12-20 20:30:15")
 argparser.add_argument('-l', '--limit', nargs='?', default=None, help="If you want to limit the results per keyword provided")
 argparser.add_argument('-m', '--min_likes', nargs='?', default=None, help="If you want to limit the results to only tweets with a given number of likes")
 argparser.add_argument('-n', '--near', nargs='?', default=None, help="If you want to limit the results to tweets geolocated near a given city")
-argparser.add_argument('-v', '--verified', nargs='?', default=None, help="If you want to limit the results to tweets geolocated near a given city")
+argparser.add_argument('-v', '--verified', nargs='?', default=None, help="If you want to limit the results to tweets made by accounts that are verified")
+argparser.add_argument('-q', '--hide_output', nargs='?', default=True, help="If you want to disable routing results logging")
+argparser.add_argument('-r', '--resume', nargs='?', default=None, help="Have the search resume at a specific Tweet ID")
 
 args = argparser.parse_args()
 args = vars(args) # convert to dict
@@ -31,6 +33,7 @@ args = vars(args) # convert to dict
 def unpack_twint_tweet(keyword, tweet_list):
 
     output_lod = []
+    print(len(tweet_list))
     for n, tweet in enumerate(tweet_list):
         output_dict = {
             'tweet_id': tweet.id,
@@ -50,12 +53,13 @@ def unpack_twint_tweet(keyword, tweet_list):
             'replies': tweet.replies_count,
             'in_reply_to_screen_name': [x.get('username') for x in tweet.reply_to] if tweet.reply_to else None,
             'QT_url': tweet.quote_url,
-            # 'RT': tweet.retweet,
+            # 'RT': tweet.retweet,f
             # 'user_rt': tweet.user_rt,
             # 'user_rt_id': tweet.user_rt_id,
             # 'rt_id': tweet.retweet_id,
             # 'user_rt_date': tweet.retweet_date,
         }
+        print(output_dict)
         output_lod.append(output_dict)
 
     return output_lod
@@ -65,16 +69,22 @@ def twint_scrape(keyword, args):
     c = twint.Config()
     c.Search = keyword
     for k,v in args.items():
-        if v:
+        if isinstance(v, str) and v.title() == "False":  # argparse converts to str
+            setattr(c, k.capitalize(), False)
+        elif v:
             setattr(c, k.capitalize(), v)
 
-    c.Hide_output = True
-    c.Store_object = True
-    c.Resume = "scrape_interrupted_last_id.csv"
+    tweets = []
+    c.Store_object = True  # preferable to using twint.output.tweets_list
+    c.Store_object_tweets_list = tweets
+
+    # c.Resume = "scrape_interrupted_last_id.csv" # TODO implement save-last-scroll-id
     twint.run.Search(c)
 
-    output_lod = unpack_twint_tweet(keyword, twint.output.tweets_list)
 
+    output_lod = unpack_twint_tweet(keyword, tweets) 
+
+    print(f"The keyword {keyword} has produced {len(output_lod)} tweets")
     return output_lod
 
 
@@ -91,7 +101,7 @@ if __name__ == "__main__":
         dict_writer.writeheader()
         dict_writer.writerows(result_lod)
 
-    os.remove("scrape_interrupted_last_id.csv")
+    # os.remove("scrape_interrupted_last_id.csv")
 
 #########################################################################################################
 
