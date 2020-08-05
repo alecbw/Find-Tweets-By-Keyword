@@ -33,7 +33,7 @@ args = vars(args) # convert to dict
 def unpack_twint_tweet(keyword, tweet_list):
 
     output_lod = []
-    print(len(tweet_list))
+
     for n, tweet in enumerate(tweet_list):
         output_dict = {
             'tweet_id': tweet.id,
@@ -43,7 +43,7 @@ def unpack_twint_tweet(keyword, tweet_list):
             'author_id': tweet.user_id,
             'created_at': datetime.fromtimestamp(tweet.datetime/1000),
             'timezone': tweet.timezone,
-            'geo': tweet.place or tweet.near, # geo
+            'geo': tweet.place or tweet.near, # geo may not be working TODO
             'text': tweet.tweet,
             'link': tweet.link,
             'urls': tweet.urls,
@@ -59,7 +59,6 @@ def unpack_twint_tweet(keyword, tweet_list):
             # 'rt_id': tweet.retweet_id,
             # 'user_rt_date': tweet.retweet_date,
         }
-        print(output_dict)
         output_lod.append(output_dict)
 
     return output_lod
@@ -96,6 +95,7 @@ if __name__ == "__main__":
         logging.info(f"Now processing keyword {keyword}")
         result_lod += twint_scrape(keyword, args)
 
+    print(f"Now writing to file: {output_filename}")
     with open(output_filename, 'w') as output_file:
         dict_writer = csv.DictWriter(output_file, result_lod[0].keys())
         dict_writer.writeheader()
