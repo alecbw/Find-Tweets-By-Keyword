@@ -9,12 +9,18 @@ logging.getLogger().setLevel(logging.INFO)
 
 try:
     import twint
+    import gspread
+    from google.oauth2.service_account import Credentials
+    from google.oauth2 import service_account
 except ImportError:
-    sys.exit("~ Make sure you install twint. Run `pip install twint` and try this again ~")
+    sys.exit("~ Make sure you install twint. Run `pip install twint google-auth gspread` and try this again ~")
+
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument('-k', '--keywords', nargs='+', help='<Required> A list of keywords (separated by spaces) that you want to search for', required=True)
 argparser.add_argument('-o', '--output_filename', nargs='?', default="! Resulting Tweets.csv", help="If you want an output filename other than the default")
+argparser.add_argument('-g', '--output_gsheet', nargs='?', help="Write to Google Sheets with the spreadsheet name you specify")
+argparser.add_argument('-d', '--deduplicate', nargs='?', default="! Resulting Tweets.csv", help="If you want an output filename other than the default")
 argparser.add_argument('-s', '--since', nargs='?', default=None, help="If you want to filter by posted date since a given date. Format is 2019-12-20 20:30:15")
 argparser.add_argument('-u', '--until', nargs='?', default=None, help="If you want to filter by posted date until a given date. Format is 2019-12-20 20:30:15")
 argparser.add_argument('-l', '--limit', nargs='?', default=None, help="If you want to limit the results per keyword provided")
@@ -28,7 +34,48 @@ args = argparser.parse_args()
 args = vars(args) # convert to dict
 
 
+######################## GSheets Helpers #########################################
+
+def auth_gspread():
+    auth = {
+        "private_key": os.environ["GSHEETS_PRIVATE_KEY"].replace("\\n", "\n").replace('"', ''),
+        "client_email": os.environ["GSHEETS_CLIENT_EMAIL"],
+        "token_uri": "https://oauth2.googleapis.com/token",
+    }
+    scopes = ['https://www.googleapis.com/auth/spreadsheets', "https://www.googleapis.com/auth/drive"]
+    credentials = Credentials.from_service_account_info(auth, scopes=scopes)
+    gc = gspread.authorize(credentials)
+    return gc
+
+
+def write_new_google_sheet(result_lod, output_filename):
+    sh = gc.open(output_filename)
+    tab = sh.get_worksheet(0)  # get the first tab
+
+    tab.update([list(result_lod[0].keys())] + [list(x.values()) for x in result_lod])
+
+    tab.resize(
+        rows=len(result_lod),
+        cols=len(result_lod[0])
+    )
+    logging.info(f"Successful write to Google Sheet {output_filename}")
+    
+
 ###############################################################################
+
+
+def deduplicate_lod(input_lod, primary_key):
+    if not primary_key:
+        output_lod = {json.dumps(d, sort_keys=True) for d in input_lod}  # convert to JSON to make dicts hashable
+        return [json.loads(x) for x in output_lod]                 # unpack the JSON
+
+    output_dict = {}
+    for d in input_lod:
+        if d.get(primary_key) not in output_dict.keys():
+            output_dict[d[primary_key]] = d
+
+    return list(output_dict.values())
+    
 
 def unpack_twint_tweet(keyword, tweet_list):
 
@@ -41,17 +88,17 @@ def unpack_twint_tweet(keyword, tweet_list):
             'author_account': tweet.username,
             'author_name': tweet.name,
             'author_id': tweet.user_id,
-            'created_at': datetime.fromtimestamp(tweet.datetime/1000),
+            'created_at': datetime.strftime(datetime.fromtimestamp(tweet.datetime/1000), '%Y-%m-%d %H:%M:%S'),
             'timezone': tweet.timezone,
             'geo': tweet.place or tweet.near, # geo may not be working TODO
             'text': tweet.tweet,
             'link': tweet.link,
-            'urls': tweet.urls,
-            'mentions': tweet.mentions,
+            'urls': ", ".join(tweet.urls),
+            'mentions': ", ".join(tweet.mentions),
             'likes': tweet.likes_count,
             'retweets': tweet.retweets_count,
             'replies': tweet.replies_count,
-            'in_reply_to_screen_name': [x.get('username') for x in tweet.reply_to] if tweet.reply_to else None,
+            'in_reply_to_screen_name': ", ".join([x.get('username') for x in tweet.reply_to]) if tweet.reply_to else None,
             'QT_url': tweet.quote_url,
             # 'RT': tweet.retweet,f
             # 'user_rt': tweet.user_rt,
@@ -67,6 +114,7 @@ def unpack_twint_tweet(keyword, tweet_list):
 def twint_scrape(keyword, args):
     c = twint.Config()
     c.Search = keyword
+
     for k,v in args.items():
         if isinstance(v, str) and v.title() == "False":  # argparse converts to str
             setattr(c, k.capitalize(), False)
@@ -89,17 +137,30 @@ def twint_scrape(keyword, args):
 
 if __name__ == "__main__":
     result_lod = []
-    output_filename = args.pop("output_filename") + ".csv" if ".csv" not in args.get("output_filename") else args.pop("output_filename")
+    deduplicate_option = args.pop("deduplicate")
+
+    if args.get("output_gsheet", False):
+        output_filename = args.pop("output_gsheet")
+        gc = auth_gspread()
+    else:
+        output_filename = args.pop("output_filename") + ".csv" if ".csv" not in args.get("output_filename") else args.pop("output_filename")
 
     for keyword in args.pop("keywords"):
         logging.info(f"Now processing keyword {keyword}")
         result_lod += twint_scrape(keyword, args)
 
-    logging.info(f"Now writing to file: {output_filename}")
-    with open(output_filename, 'w') as output_file:
-        dict_writer = csv.DictWriter(output_file, result_lod[0].keys())
-        dict_writer.writeheader()
-        dict_writer.writerows(result_lod)
+    if deduplicate_option:
+        logging.info("Deduplicating")
+        result_lod = deduplicate_lod(result_lod, 'tweet_id')
+
+    if ".csv" in output_filename:
+        logging.info(f"Now writing to file: {output_filename}")
+        with open(output_filename, 'w') as output_file:
+            dict_writer = csv.DictWriter(output_file, result_lod[0].keys())
+            dict_writer.writeheader()
+            dict_writer.writerows(result_lod)
+    else:
+        write_new_google_sheet(result_lod, output_filename)
 
     # os.remove("scrape_interrupted_last_id.csv")
 
