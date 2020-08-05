@@ -83,7 +83,7 @@ def twint_scrape(keyword, args):
 
     output_lod = unpack_twint_tweet(keyword, tweets) 
 
-    print(f"The keyword {keyword} has produced {len(output_lod)} tweets")
+    logging.info(f"The keyword {keyword} has produced {len(output_lod)} tweets")
     return output_lod
 
 
@@ -95,7 +95,7 @@ if __name__ == "__main__":
         logging.info(f"Now processing keyword {keyword}")
         result_lod += twint_scrape(keyword, args)
 
-    print(f"Now writing to file: {output_filename}")
+    logging.info(f"Now writing to file: {output_filename}")
     with open(output_filename, 'w') as output_file:
         dict_writer = csv.DictWriter(output_file, result_lod[0].keys())
         dict_writer.writeheader()
