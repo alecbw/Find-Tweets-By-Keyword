@@ -29,7 +29,8 @@ A series of optional command line arguments are provided (only `-k`/`--keywords`
 |---------------------------|-------------------------------------------------------------------------------------------
 | '-k' or '--keywords'        | A list of keywords (separated by spaces) that you want to search for; required=True
 | '-o' or '--output_filename' | Set the output filename to something other than the default                             
-| '-g' or '--output_gsheet' | Write to Google Sheets with the spreadsheet name you specify
+| '-g' or '--output_gsheet'.  | Write to Google Sheets with the spreadsheet name you specify
+| '-d' or '--deduplicate'     | Remove duplicates from the output (uses tweet_id)
 | '-s' or '--since'           | Filter by posted date since a given date. Format is 2019-12-20 20:30:15
 | '-u' or '--until'           | Filter by posted date until a given date. Format is 2019-12-20 20:30:15
 | '-l' or '--limit'           | Limit the results per keyword provided                          
