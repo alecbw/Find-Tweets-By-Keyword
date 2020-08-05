@@ -13,7 +13,7 @@ pip install twint
 
 To get started, feel free to clone or fork this repo: 
 ```bash
-git clone git@github.com:alecbw/Find-Tweets-By-Keyword.git && cd Find-Tweets-By-Keyword
+git clone  git://github.com/alecbw/Find-Tweets-By-Keyword.git && cd Find-Tweets-By-Keyword
 ```
 
 ### \#2 - usage
@@ -39,3 +39,9 @@ A series of optional command line arguments are provided (only `-k`/`--keywords`
 | '-r', '--resume'          | Have the search resume at a specific Tweet ID
 
 A list of the full `twint` supported args in at the bottom of `get_tweets_by_keyword.py`
+
+
+
+### \#3 - performance
+
+In the (admittedly small) amount of testing I've done, the script can generate 1500-2000 tweets/minute. If you intend to scale this to a significant volume, I advise that you distribute your workers across multiple boxes & IP's.
